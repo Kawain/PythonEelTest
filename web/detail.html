@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="icon" type="image/png" href="/img/memo.png">
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <script type="text/javascript" src="/eel.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <nav class="mt-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">ホーム</a></li>
+                <li class="breadcrumb-item" id="bread2"></li>
+                <li class="breadcrumb-item active" id="bread3"></li>
+            </ol>
+        </nav>
+        <h1 class="mb-4" id="h1title"></h1>
+        <pre class="p-2" style="background-color: #e9ecef;"><code id="precode" style="color: #000;"></code></pre>
+        <p class="text-right" style="margin-bottom: 100px;">
+            <a href="" class="btn btn-primary" id="edit_form">編集</a>
+        </p>
+        <div class="text-center my-4">
+            <button class="btn" onclick="window.scrollTo(0,0);">上に戻る</button>
+        </div>
+    </div>
+    <script>
+        //URLのパラメータを取得
+        let urlParams = new URLSearchParams(window.location.search);
+        let id = urlParams.get('id');
+
+        //Python関数の戻り値をJavaScriptで取得するには async await を使う
+        async function makeObj() {
+            let html = "";
+            let json = await eel.detail(id)();
+            let obj = JSON.parse(json);
+            //title設定
+            document.title = obj[3];
+            //パンくずリスト設定
+            let bread2 = `<a href="index.html?id=${obj[1]}">${obj[2]}</a>`;
+            document.getElementById("bread2").innerHTML = bread2;
+            //パンくずリスト設定
+            document.getElementById("bread3").innerHTML = obj[3];
+            //h1設定
+            document.getElementById("h1title").innerHTML = obj[3];
+            //code設定
+            document.getElementById("precode").innerHTML = obj[4];
+            //edit_formのurl設定
+            document.getElementById("edit_form").href = `edit_form.html?id=${obj[0]}`;
+        }
+        makeObj();
+    </script>
+</body>
+
+</html>

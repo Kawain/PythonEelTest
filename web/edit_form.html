@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>編集</title>
+    <link rel="icon" type="image/png" href="/img/memo.png">
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <script type="text/javascript" src="/eel.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <nav class="mt-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">ホーム</a></li>
+                <li class="breadcrumb-item active">編集</li>
+            </ol>
+        </nav>
+        <div class="form-group">
+            <label for="result">カテゴリ（カテゴリの編集は<a href="category.html">こちら</a>）</label>
+            <select class="form-control" name="category_id" id="result">
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="title">タイトル</label>
+            <input type="text" class="form-control" name="title" id="title">
+        </div>
+        <div class="form-group">
+            <label for="detail">内容</label>
+            <textarea class="form-control" name="detail" id="detail" wrap="off" style="height: 800px;"></textarea>
+        </div>
+        <p class="text-right" style="margin-bottom: 200px;">
+            <button class="btn btn-secondary" id="delete_btn">削除</button>
+            <button class="btn btn-primary" id="update_btn">編集</button>
+        </p>
+        <div class="text-center my-4">
+            <button class="btn" onclick="window.scrollTo(0,0);">上に戻る</button>
+        </div>
+    </div>
+    <script>
+        //URLのパラメータを取得
+        let urlParams = new URLSearchParams(window.location.search);
+        let id = Number(urlParams.get('id'));
+
+        //編集ボタンの関数
+        function edit_form_update(e) {
+            let category_id = Number(document.getElementById('result').value);
+            let title = document.getElementById('title').value;
+            let detail = document.getElementById('detail').value;
+
+            if (title == "") {
+                alert("何か入力してください");
+                return false;
+            }
+            //Pythonの関数に引数を渡す
+            eel.edit_form_update(id, category_id, title, detail);
+            //リダイレクト
+            location.href = `detail.html?id=${id}`;
+        }
+
+        //削除ボタンの関数
+        function edit_form_delete(e) {
+            let ok = window.confirm("本当に削除しますか？");
+            if (ok) {
+                //Pythonの関数に引数を渡す
+                eel.edit_form_delete(id);
+                //成功失敗関係のないメッセージ
+                alert("送信しました");
+                //リダイレクト
+                location.href = `index.html`;
+            } else {
+                alert("取り消しました");
+            }
+        }
+
+        //Python関数の戻り値をJavaScriptで取得するには async await を使う
+        async function makeOption(id) {
+            let html = "";
+            let json = await eel.edit_form(id)();
+            let obj = JSON.parse(json);
+            for (let v of obj["c"]) {
+                if (obj["d"][1] == v[0]) {
+                    html +=
+                        `
+<option value="${v[0]}" selected>${v[1]}</option>
+
+                    `;
+                } else {
+                    html +=
+                        `
+<option value="${v[0]}">${v[1]}</option>
+
+                    `;
+                }
+            }
+            document.getElementById('result').innerHTML = html;
+            document.getElementById('title').value = obj["d"][3];
+            document.getElementById('detail').value = obj["d"][4];
+        }
+        makeOption(id);
+
+        window.onload = function () {
+            //編集ボタンにaddEventListener
+            document.getElementById("update_btn").addEventListener("click", edit_form_update, false);
+            document.getElementById("delete_btn").addEventListener("click", edit_form_delete, false);
+        };
+    </script>
+</body>
+
+</html>
